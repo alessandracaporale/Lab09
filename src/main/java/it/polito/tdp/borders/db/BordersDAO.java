@@ -23,7 +23,8 @@ public class BordersDAO {
 			ResultSet rs = st.executeQuery();
 
 			while (rs.next()) {
-				System.out.format("%d %s %s\n", rs.getInt("ccode"), rs.getString("StateAbb"), rs.getString("StateNme"));
+				Country c = new Country(rs.getInt("ccode"), rs.getString("StateAbb"), rs.getString("StateNme"));
+				result.add(c);
 			}
 			
 			conn.close();
@@ -31,14 +32,46 @@ public class BordersDAO {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-			System.out.println("Errore connessione al database");
+			System.out.println("Errore connessione al database - loadAllCountries()");
 			throw new RuntimeException("Error Connection Database");
 		}
 	}
 
 	public List<Border> getCountryPairs(int anno) {
-
-		System.out.println("TODO -- BordersDAO -- getCountryPairs(int anno)");
-		return new ArrayList<Border>();
+		String sql = "SELECT state1no, state2no, year "
+				+ "FROM contiguity "
+				+ "WHERE conttype = 1";
+		List<Border> result = new ArrayList<>();
+		
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+			
+			while(rs.next()) {
+				Border b = new Border(rs.getInt("state1no"), rs.getInt("state2no"), rs.getInt("year"));
+				for (Country c : this.loadAllCountries()) {
+					if (c.getcCode() == rs.getInt("state1no")) {
+						Country c1 = c;
+						b.setC1(c1);
+					}
+					else if (c.getcCode() == rs.getInt("state2no")) {
+						Country c2 = c;
+						b.setC2(c2);
+					}
+				}
+				if (b.getYear() <= anno) {
+					result.add(b);
+				}
+			}
+			conn.close();
+			return result;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database - getCountryPairs()");
+			throw new RuntimeException("Error Connection Database");
+		}
+		//return result;
 	}
 }

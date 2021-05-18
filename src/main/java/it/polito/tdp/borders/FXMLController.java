@@ -13,6 +13,7 @@ import javafx.scene.control.TextField;
 public class FXMLController {
 
 	private Model model;
+	private int anno;
 	
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -28,6 +29,15 @@ public class FXMLController {
 
     @FXML
     void doCalcolaConfini(ActionEvent event) {
+    	this.txtResult.setText("");
+    	anno = Integer.parseInt(txtAnno.getText());
+    	if(anno<1816 || anno>2016) {
+    		this.txtResult.setText("Valore non disponibile! \n"
+    				+ "Inserire un anno compreso tra il 1816 e il 2016.");
+    		return;
+    	}
+    	
+    	this.txtResult.setText(model.elencoConfiniDatoAnno(anno));
 
     }
 
